@@ -26,42 +26,42 @@
 
 	<div id="site-content">
 
-		<%- include('header'); %>
+   <%- include('header'); %>
 
 <main class="main-content">
 	<div class="container">
 		<div class="page">
 
-			<div class="movie-list">
+			<div class="movie-list"> <!-- ajouter clic toggle? -->
 
-				<% for (var i=0; i<body.results.length; i++){ %> <!-- autre solution avec affichage portion a ou b du code grâce à une var = true/false -->
+				<% for (var i=0; i<body.results.length; i++){ %>
           <% var like = []; %>
 				  <% for(var j=0; j<datas.length; j++){ %>
             <% if(body.results[i].id == datas[j].id){ %>
-						  <% var likeI = true; %>
+						  <% var likeI = "yes"; %>
 							<% like.push(likeI); %>
 						<% } else { %>
-							<% var likeI = false; %>
+							<% var likeI = "no"; %>
 							<% like.push(likeI); %>
 						<% } %>
 					<% } %>
-				  <% if (like.indexOf(true) != -1){ %>
+				  <% if (like.indexOf("yes") != -1){ %>
 						<div class="movie">
 							<figure class="movie-poster"><img src= "https://image.tmdb.org/t/p/w500<%=body.results[i].poster_path%>" alt="<%= body.results[i].title %>"></figure>
-							<div class="movie-title"><%= body.results[i].title %><i class="addtofav fa fa-heart" aria-hidden="true" id="<%=body.results[i].id%>"></i></div>
+							<div class="movie-title"><%= body.results[i].title %><a href= "./addtofav?id=<%=body.results[i].id %>"><i class="addtofav fa fa-heart" aria-hidden="true"></i></a></div>
 							<div class="movie-shopping">5€ <i class="fa fa-shopping-cart" aria-hidden="true"></i></div>
 							<p><%= body.results[i].overview %></p>
-						</div>
+						 </div>
 					<% } else { %>
 						<div class="movie">
 							<figure class="movie-poster"><img src= "https://image.tmdb.org/t/p/w500<%=body.results[i].poster_path%>" alt="<%= body.results[i].title %>"></figure>
-							<div class="movie-title"><%= body.results[i].title %><i class="addtofav fa fa-heart-o" aria-hidden="true" id="<%=body.results[i].id%>"></i></div>
+							<div class="movie-title"><%= body.results[i].title %><a href= "./addtofav?id=<%=body.results[i].id %>"><i class="addtofav fa fa-heart-o" aria-hidden="true"></i></a></div>
 							<div class="movie-shopping">5€ <i class="fa fa-shopping-cart" aria-hidden="true"></i></div>
 							<p><%= body.results[i].overview %></p>
 						</div>
 					<% } %>
 				<% }; %>
-
+<!-- Penser à ajouter le find dans /addtofav du back et à lui passer datas -->
 			</div> <!-- .movie-list -->
 
 		</div>
@@ -74,17 +74,6 @@
 <script src="js/jquery-1.11.1.min.js"></script>
 <script src="js/plugins.js"></script>
 <script src="js/app.js"></script>
-
-<script>
-$(".addtofav").on("click", function(){
-	$.getJSON("/addtofav?id="+$(this).attr('id'), function(datas){
-	});
-	$(this).removeClass('fa-heart-o');
-	$(this).addClass('fa-heart');
-	$(this).off( "click");
-  //empêcher nouveau clic?
-});
-</script>
 
 </body>
 

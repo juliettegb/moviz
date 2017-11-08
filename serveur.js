@@ -35,8 +35,11 @@ var options = { method: 'GET',
 app.get('/', function(req, res){
   request(options, function(error, response, body){
     var body = JSON.parse(body);
-      console.log(body);
-    res.render('home', {body});
+    console.log(body);
+    var query = favModel.find(); // on stocke le find dans query pour pouvoir l'exécuter que plus tard via .exec
+    query.exec(function(err,datas){
+      res.render('home', {body, datas}); //envoi des films webservice + films favoris BDD vers le ejs
+    });
   });
 });
 
@@ -46,9 +49,11 @@ app.get('/home', function(req, res){
     //for (var i=0; i<21; i++){
       //var movie = {title: body.results[i].title, desc: body.results[i].overview, icon: "https://image.tmdb.org/t/p/w500/"+body.results[i].poster_path};
       //movieList.push(movie[i]);
-      console.log(body);
-    //};
-    res.render('home', {body});
+    console.log(body);
+    var query = favModel.find(); // on stocke le find dans query pour pouvoir l'exécuter que plus tard via .exec
+    query.exec(function(err,datas){
+      res.render('home', {body, datas});
+    });
   });
 });
 
@@ -69,13 +74,12 @@ app.get('/addtofav', function(req, res){
     fav.save(function (error, datas){ //on est sur de l'asynchrone donc fonction de callback qui sera exécutée lorsque le backend aura fini son boulot!
       console.log(error);
       console.log(datas);
-      //favModel.find(function (err, body){ //on refait un find pour que le res.render affiche également les nouvelles entrées
-      //});
-      request(options, function(error, response, body){
+      /*request(options, function(error, response, body){
         var body = JSON.parse(body);
         console.log(body);
-        res.render('home', {body});
-      });
+        res.render('home', {body, datas}); //datas? et avant le render ajouter var query + query.exec?
+      });*/
+      res.redirect('/'); //remplace la portion request(options...) jusqu'au res.render('home') //// Voir correction Noël pour plus d'ex de factorisation (condition du displayLike et autres infos qu'on passe à l'ejs via le render)
     });
   });
 });
@@ -83,11 +87,8 @@ app.get('/addtofav', function(req, res){
 app.get('/review', function(req, res){
   var query = favModel.find(); // on stocke le find dans query pour pouvoir l'exécuter que plus tard via .exec
   query.exec(function(err,datas){
-    //favModel.find(function(err, datas){
-      res.render('review', {datas: datas});
-    //});
+    res.render('review', {datas: datas});
   });
-  //res.render('review', {datas: []});
 });
 
 app.get('/contact', function(req,res){

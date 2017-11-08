@@ -25,33 +25,62 @@
 <body>
 
 	<div id="site-content">
+		<header class="site-header">
+			<div class="container">
+				<a href="./home" id="branding">
+					<img src="images/logo.png" alt="" class="logo">
+					<div class="logo-copy">
+						<h1 class="site-title">Moviz</h1>
+						<small class="site-description">Manage your best movies</small>
+					</div>
+				</a> <!-- #branding -->
 
-		<%- include('header'); %>
+				<div class="main-navigation">
+					<button type="button" class="menu-toggle"><i class="fa fa-bars"></i></button>
+					<ul class="menu">
+						<li class="menu-item  current-menu-item"><a href="./home">Last releases</a></li>
+						<li class="menu-item"><a href="./review">My movies</a></li>
+						<li class="menu-item"><a href="./contact">Contact</a></li>
+						<!--
+						<li class="menu-item"><a href="signup.html">Sign up</a></li>
+						<li class="menu-item"><a href="signin.html">Sign in</a></li>
+						<li class="menu-item"><a href="signout.html">Sign out</a></li>
+					-->
+				</ul> <!-- .menu -->
 
+				<!--<form action="#" class="search-form">
+				<input type="text" placeholder="Search...">
+				<button><i class="fa fa-search"></i></button>
+			</form>-->
+		</div> <!-- .main-navigation -->
+
+		<div class="mobile-navigation"></div>
+	</div>
+</header>
 <main class="main-content">
 	<div class="container">
 		<div class="page">
 
 			<div class="movie-list">
 
-				<% for (var i=0; i<body.results.length; i++){ %> <!-- autre solution avec affichage portion a ou b du code grâce à une var = true/false -->
+				<% for (var i=0; i<body.results.length; i++){ %>
           <% var like = []; %>
 				  <% for(var j=0; j<datas.length; j++){ %>
             <% if(body.results[i].id == datas[j].id){ %>
-						  <% var likeI = true; %>
+						  <% var likeI = "yes"; %>
 							<% like.push(likeI); %>
 						<% } else { %>
-							<% var likeI = false; %>
+							<% var likeI = "no"; %>
 							<% like.push(likeI); %>
 						<% } %>
 					<% } %>
-				  <% if (like.indexOf(true) != -1){ %>
+				  <% if (like.indexOf("yes") != -1){ %>
 						<div class="movie">
 							<figure class="movie-poster"><img src= "https://image.tmdb.org/t/p/w500<%=body.results[i].poster_path%>" alt="<%= body.results[i].title %>"></figure>
 							<div class="movie-title"><%= body.results[i].title %><i class="addtofav fa fa-heart" aria-hidden="true" id="<%=body.results[i].id%>"></i></div>
 							<div class="movie-shopping">5€ <i class="fa fa-shopping-cart" aria-hidden="true"></i></div>
 							<p><%= body.results[i].overview %></p>
-						</div>
+						 </div>
 					<% } else { %>
 						<div class="movie">
 							<figure class="movie-poster"><img src= "https://image.tmdb.org/t/p/w500<%=body.results[i].poster_path%>" alt="<%= body.results[i].title %>"></figure>
@@ -79,10 +108,6 @@
 $(".addtofav").on("click", function(){
 	$.getJSON("/addtofav?id="+$(this).attr('id'), function(datas){
 	});
-	$(this).removeClass('fa-heart-o');
-	$(this).addClass('fa-heart');
-	$(this).off( "click");
-  //empêcher nouveau clic?
 });
 </script>
 

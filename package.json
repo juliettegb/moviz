@@ -4,8 +4,7 @@
   "description": "",
   "main": "serveur.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node serveur.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Juliette Grandin",
   "license": "ISC",

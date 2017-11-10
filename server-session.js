@@ -4,6 +4,9 @@ var mongoose = require('mongoose');
 var session = require("express-session");
 var bodyParser = require('body-parser')
 var app = express(); // initialisation du serveur
+
+const stripe = require("stripe")("sk_test_vThh3OIl813enaLYiv7CRoWs");
+
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false })); //on enrichit express du body-parser
@@ -74,32 +77,35 @@ app.get('/home', function(req, res){
 });
 
 app.get('/addtofav', function(req, res){
-  var id= req.query.id;
-  //console.log(req.query.id);
-  request("https://api.themoviedb.org/3/movie/"+id+"?api_key=ba8fce530ef7796be5f967ea6f6edd54&language=fr-FR", function(error, response, datas){
-    var datas = JSON.parse(datas);
-    //console.log(datas);
-
-      var fav = new favModel({ //ordre d'enregistrement
-        id: req.query.id,
-        title: datas.title,
-        desc: datas.overview,
-        icon: "https://image.tmdb.org/t/p/w500/"+datas.poster_path,
-        userID: req.session.userID,
-      });
-
-    fav.save(function (error, datas){ //on est sur de l'asynchrone donc fonction de callback qui sera exécutée lorsque le backend aura fini son boulot!
-      //console.log(error);
+  if(req.session.userID == undefined){
+    res.redirect('/');
+  } else {
+    var id= req.query.id;
+    request("https://api.themoviedb.org/3/movie/"+id+"?api_key=ba8fce530ef7796be5f967ea6f6edd54&language=fr-FR", function(error, response, datas){
+      var datas = JSON.parse(datas);
       //console.log(datas);
-      /* A la place du redirect:
-      request(options, function(error, response, body){
-        var body = JSON.parse(body);
-        console.log(body);
-        res.render('home', {body, datas}); //datas? et avant le render ajouter var query + query.exec?
-      });*/
-      res.redirect('/'); //remplace la portion request(options...) jusqu'au res.render('home') //// Voir correction Noël pour plus d'ex de factorisation (condition du displayLike et autres infos qu'on passe à l'ejs via le render)
+
+        var fav = new favModel({ //ordre d'enregistrement
+          id: req.query.id,
+          title: datas.title,
+          desc: datas.overview,
+          icon: "https://image.tmdb.org/t/p/w500/"+datas.poster_path,
+          userID: req.session.userID,
+        });
+
+      fav.save(function (error, datas){ //on est sur de l'asynchrone donc fonction de callback qui sera exécutée lorsque le backend aura fini son boulot!
+        //console.log(error);
+        //console.log(datas);
+        /* A la place du redirect:
+        request(options, function(error, response, body){
+          var body = JSON.parse(body);
+          console.log(body);
+          res.render('home', {body, datas}); //datas? et avant le render ajouter var query + query.exec?
+        });*/
+        res.redirect('/'); //remplace la portion request(options...) jusqu'au res.render('home') //// Voir correction Noël pour plus d'ex de factorisation (condition du displayLike et autres infos qu'on passe à l'ejs via le render)
+      });
     });
-  });
+  };
 });
 
 app.get('/review', function(req, res){
@@ -115,7 +121,7 @@ app.get('/contact', function(req,res){
 });
 
 app.get('/signup', function(req,res){ //ou signupform mais en fait on peut distinguer les "deux routes" en gardant signup mais avec app.get et app.post
-  res.render('signup', {userID: req.session.userID});
+  res.render('signup', {userID: req.session.userID}); //userID: undefined puisque pas encore signed up
 });
 
 app.post('/signup', function(req,res){ //get: pour lire, post: plutôt pour écrire et il existe d'autres type d'envoi (protocoles d'échange HTTP)
@@ -135,10 +141,11 @@ app.post('/signup', function(req,res){ //get: pour lire, post: plutôt pour écr
 });
 
 app.get('/signin', function(req,res){
-  res.render('signin', {userID: req.session.userID});
+  res.render('signin', {userID: undefined, error: false}); //undefined car pas encore signed in et pas d'erreur car on propose le form pr la première fois à l'utilisateur
 });
 
 app.post('/signin', function(req,res){
+  var signin = false;
   var query = userModel.find();
   query.exec(function(err,datas){ //autre solution + optimale: findOne (mail=req.query.mail, pw....)
     var isLogged = false;
@@ -156,7 +163,7 @@ app.post('/signin', function(req,res){
     if (isLogged == true){
       res.redirect('/');
     } else {
-      res.render('signin',{});
+      res.render('signin',{userID: undefined, error: true}); //userID: req.session.userID et erreur : true or false, si true (cas "else" alors nouvel envoi du form avec alerte et si dans le "if" ça reste à false
     }
   });
 });
@@ -186,6 +193,23 @@ app.get('/search', function (req, res) {
       });
     });
   });
+});
+
+app.post("/buy", function(req, res) {
+  let amount = 500;
+
+  stripe.customers.create({
+    email: req.body.stripeEmail,
+    source: req.body.stripeToken
+  })
+  .then(customer =>
+    stripe.charges.create({
+      amount,
+      description: req.body.titleMovie,
+      currency: "eur",
+      customer: customer.id
+    }))
+  .then(charge => res.send("Ok"));
 });
 
 var port = process.env.PORT || 8080;

@@ -19,6 +19,27 @@
 	<script src="js/ie-support/respond.js"></script>
 	<![endif]-->
 
+  <!-- Stripe -->
+	<script src="https://checkout.stripe.com/checkout.js"></script>
+	<script>
+	var handler = StripeCheckout.configure({
+	  key: 'pk_test_aZRBFZvfWMi4ZGm1nAQXUUAz',
+	  image: 'https://stripe.com/img/documentation/checkout/marketplace.png',
+	  locale: 'auto',
+	  billingAddress: true,
+	  token: function(token, arg) {
+			console.log(token);
+			console.log(arg);
+	    // You can access the token ID with `token.id`.
+	    // Get the token ID to your server-side code for use.
+	    // On peut ajouter différentes infos dans le formulaire en ajoutant d'autres arguments
+      $.post('/buy', {stripeToken: token.id, stripeEmail: token.email, titleMovie}, function(data, textStatus){
+        console.log(data);
+			});
+		}
+	});
+	</script>
+
 </head>
 
 
@@ -34,32 +55,44 @@
 
 			<div class="movie-list">
 
-				<% for (var i=0; i<body.results.length; i++){ %> <!-- autre solution avec affichage portion a ou b du code grâce à une var = true/false -->
-          <% var like = []; %>
-				  <% for(var j=0; j<datas.length; j++){ %>
-            <% if(body.results[i].id == datas[j].id){ %>
-						  <% var likeI = true; %>
-							<% like.push(likeI); %>
-						<% } else { %>
-							<% var likeI = false; %>
-							<% like.push(likeI); %>
-						<% } %>
-					<% } %>
+				<% for (var i=0; i<body.results.length; i++){ //autre solution avec affichage portion a ou b du code grâce à une var = true/false
+             var like = [];
+				     for(var j=0; j<datas.length; j++){
+               if(body.results[i].id == datas[j].id){
+						     var likeI = true;
+							   like.push(likeI);
+						    } else {
+							   var likeI = false;
+							   like.push(likeI);
+						    }
+					   } %>
+
 				  <% if (like.indexOf(true) != -1){ %>
 						<div class="movie">
 							<figure class="movie-poster"><img src= "https://image.tmdb.org/t/p/w500<%=body.results[i].poster_path%>" alt="<%= body.results[i].title %>"></figure>
-							<div class="movie-title"><%= body.results[i].title %><i class="addtofav fa fa-heart" aria-hidden="true" id="<%=body.results[i].id%>"></i></div>
-							<div class="movie-shopping">5€ <i class="fa fa-shopping-cart" aria-hidden="true"></i></div>
+
+              <% if (userID != undefined){ %>
+							  <div class="movie-title"><%= body.results[i].title %><i class="addtofav fa fa-heart" aria-hidden="true" id="<%=body.results[i].id%>"></i></div>
+							  <div class="movie-shopping">5€ <button data-title="<%= body.results[i].title %>" class="shopping"><i class="fa fa-shopping-cart" aria-hidden="true"></i></button></div>
+              <% } %>
+
 							<p><%= body.results[i].overview %></p>
 						</div>
+
 					<% } else { %>
+
 						<div class="movie">
 							<figure class="movie-poster"><img src= "https://image.tmdb.org/t/p/w500<%=body.results[i].poster_path%>" alt="<%= body.results[i].title %>"></figure>
-							<div class="movie-title"><%= body.results[i].title %><i class="addtofav fa fa-heart-o" aria-hidden="true" id="<%=body.results[i].id%>"></i></div>
-							<div class="movie-shopping">5€ <i class="fa fa-shopping-cart" aria-hidden="true"></i></div>
+
+              <% if (userID != undefined){ %>
+							  <div class="movie-title"><%= body.results[i].title %><i class="addtofav fa fa-heart-o" aria-hidden="true" id="<%=body.results[i].id%>"></i></div>
+							  <div class="movie-shopping">5€ <button data-title="<%= body.results[i].title %>" class="shopping"><i class="fa fa-shopping-cart" aria-hidden="true"></i></button></div>
+              <% } %>
+
 							<p><%= body.results[i].overview %></p>
 						</div>
 					<% } %>
+
 				<% }; %>
 
 			</div> <!-- .movie-list -->
@@ -83,6 +116,31 @@ $(".addtofav").on("click", function(){
 	$(this).addClass('fa-heart');
 	$(this).off( "click");
 });
+</script>
+
+<!-- BUY FORM (STRIPE) -->
+<script>
+
+var titleMovie;
+$('.shopping').on('click', function(e) {
+  // Open Checkout with further options:
+  titleMovie = $(this).data('title');
+  console.log(titleMovie);
+  handler.open({
+    name: titleMovie,
+    description: 'VOD Purchase',
+    zipCode: true,
+    currency: 'eur',
+    amount: 500
+  });
+  e.preventDefault();
+});
+
+// Close Checkout on page navigation:
+window.addEventListener('popstate', function() {
+  handler.close();
+});
+
 </script>
 
 </body>

@@ -39,6 +39,10 @@
 								<div class="col-md-offset-3 col-md-6">
 									<h2>Sign in</h2>
 
+              		<% if(error == true){ %>
+			              <div class="alert alert-danger" role="alert">Mail ou mot de passe incorrect</div>
+		              <% } %>
+
 									<form class="contact-form" action="/signin" method="post"> <!-- action = route utilisée pour traiter les infos -->
 										<input type="text" placeholder="email" name="mail"> <!-- name = clé des éléments renvoyés -->
 										<input type="password" placeholder="password" name="pw">

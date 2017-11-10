@@ -1,0 +1,23 @@
+<script>
+
+var titleMovie;
+$('.shopping').on('click', function(e) {
+  // Open Checkout with further options:
+  titleMovie = $(this).data('title');
+  console.log(titleMovie);
+  handler.open({
+    name: titleMovie,
+    description: 'VOD Purchase',
+    zipCode: true,
+    currency: 'eur',
+    amount: 500
+  });
+  e.preventDefault();
+});
+
+// Close Checkout on page navigation:
+window.addEventListener('popstate', function() {
+  handler.close();
+});
+
+</script>

@@ -4,6 +4,10 @@ var mongoose = require('mongoose');
 var session = require("express-session");
 var bodyParser = require('body-parser')
 var app = express(); // initialisation du serveur
+var Mailchimp = require('mailchimp-api-v3')
+var mailchimp = new Mailchimp("4fa6dff6c4a5751747e7bada558c6a1b-us17");
+var Trello = require ("node-trello");
+var trello = new Trello ("31b606432356efc49cdfdfd1735a20f5", "f8fd177203b54f5a45ec3837440e663d56426b03b3edab5d5b3c6735320f9810");
 
 const stripe = require("stripe")("sk_test_vThh3OIl813enaLYiv7CRoWs");
 
@@ -209,8 +213,36 @@ app.post("/buy", function(req, res) {
       currency: "eur",
       customer: customer.id
     }))
-  .then(charge => res.send("Ok"));
+  .then(charge => res.send("Ok")); //then: pareil que fonction de callback, nouvelle notation
 });
+
+app.post("/contact", function(req,res) {
+
+  mailchimp.post('/lists/52415e4171/members', {
+    email_address : req.body.email,
+    status : 'subscribed',
+    merge_fields: {
+      "FNAME": req.body.name,
+      "MESSAGE": req.body.message,
+    }
+  })
+  .then(function(results) {
+    res.redirect("/");
+  })
+  .catch(function (err) {
+    console.log(err);
+  })
+
+  trello.post('/1/cards', { //.then ne fonctionne pas avec le module node-trello
+    idList: "5a09aa9c031ff6bb793e2c94",
+    name : req.body.name+" ("+req.body.email+")",
+    desc : req.body.message,
+  }, function(err, datacard) {
+    console.log(err);
+    res.redirect("/");
+  });
+});
+
 
 var port = process.env.PORT || 8080;
 app.listen(port, function (){

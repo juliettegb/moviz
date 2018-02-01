@@ -48,13 +48,13 @@
 										<a href="tel:1590912831">+1 590 912 831</a>
 									</li>
 								</ul>
-								<div class="contact-form">
-									<input type="text" class="name" placeholder="name...">
-									<input type="text" class="email" placeholder="email...">
-									<textarea class="message" placeholder="message..."></textarea>
+
+								<form class="contact-form" action="/contact" method="post">
+									<input type="text" class="name" name="name" placeholder="name...">
+									<input type="text" class="email" name="email" placeholder="email...">
+									<textarea class="message" name="message" placeholder="message..."></textarea>
 									<input type="submit" value="Send Message ">
-								</div>
-							</div>
+							</form>
 							<div class="col-md-7 col-md-offset-1">
 								<div class="map"></div>
 							</div>
